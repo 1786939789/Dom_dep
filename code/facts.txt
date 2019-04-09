@@ -1,0 +1,1 @@
+[{"FunDecl":["fun1",""],"Formal":[]},{"Call":["console","log","fun1"],"Actual":[[1,"hello world"]]},{"Load":["TempV0","document","addEventListener"]},{"Call":["TempV0","call",""],"Actual":[[1,"a"],[2,"click"],[3,"fun1"]]},{"Load":["TempV1","document","addEventListener"]},{"Call":["TempV1","apply",""],"Actual":[[1,"a"],[2,"click"],[3,"fun1"]]}]
