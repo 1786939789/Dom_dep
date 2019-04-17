@@ -1,10 +1,11 @@
 // 获取对象所绑定的Dom元素id
-function GetDom(array, objectName){
+function GetDom(array, objectName){    
     for(var i=0; i<array.length; ++i){
         if(array[i].Dom != undefined && array[i].Dom[0] === objectName){
             return array[i].Dom[1];
         }
     }
+    return objectName;
 }
 // 是否函数嵌套调用引起绑定或解绑依赖
 function IsNestCall(array, functionName1, functionName2){

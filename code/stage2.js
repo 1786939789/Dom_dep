@@ -145,8 +145,9 @@ var travers = {
 // 事件
 var eventList = ['click', 'dbclick','keypress', 'keydown', 'keyup'
                 , 'hover', 'submit', 'change', 'focus', 'blur'
-                , 'Store', 'resize', 'scroll', 'unload', 'mousedown'
-                , 'mousemove', 'mouseout', 'mouseover', 'mouseup'];
+                , 'store', 'resize', 'scroll', 'unload', 'mousedown'
+                , 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'change',
+                'load'];
 module.exports = {
     GetFacts: function(cfg){
         var facts = []; //事实
@@ -243,6 +244,8 @@ module.exports = {
                 }else{
                     facts.splice(i+1, 0, {DomRemove: [facts[i].Call[0], facts[i].Actual[0][1], facts[i].Actual[1][1], facts[i].Call[2]]});
                 }
+            }else if(facts[i].Call != undefined && (facts[i].Call[1] === 'setTimeout' || facts[i].Call[1] === 'setInterval')){
+                facts.splice(i+1, 0, {DomInstall: ['timer_t', facts[i].Call[1], facts[i].Actual[0][1], facts[i].Call[2]]});
             }
         }
         fs.writeFileSync('facts.txt', JSON.stringify(facts));

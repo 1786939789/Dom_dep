@@ -10,17 +10,17 @@
     <button id="test1">test1</button>
     <button id="test2">test2</button>
     <script>
+        function fun2(){
+            console.log('hello world');
+        }
         var a = document.getElementById('test1');
         var b = document.getElementById('test2');
-        function fun1(){
-            alert('fun1');
-            b.addEventListener('click', fun2);
+        var c = {
+            fun1: function(){
+                b.addEventListener('click', fun2);
+            }
         }
-        function fun2(){
-            alert('fun2');
-        }
-        var d = {fun: fun1};
-        a.onclick = d.fun;
+        a.onclick = c.fun1;
     </script>
 </body>
 </html>
