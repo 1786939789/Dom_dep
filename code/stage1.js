@@ -298,39 +298,29 @@ module.exports = {
                 index--;
             }
         }).toString();
-        /* Phase 0C - pulling out expression statements from objectExpression */
-        // ex) var a = { index: this.c.d('a1'), ...};
-        // => var a = { index: undefined, ... }; 
-        //    a.index = a.c.d('a1');
-        var phase0C = falafel(phase0B, function(node) {
+        //* Phase0C - a = {c: d} => a.c = d *//
+        var phase0C = falafel(phase0B, function(node){
             if (node.type === 'ObjectExpression') {
                 var name; //varName
+                var statements = ''; //update statements
                 if (node.parent.type === 'VariableDeclarator') {
                     name = node.parent.id.source();
-                } else if (node.parent.type === 'AssignmentExpression') {
+                    statements += 'var ' + name + ';\n';
+                }else if (node.parent.type === 'AssignmentExpression') {
                     name = node.parent.left.source();
-                } else {
-                    if (node.parent.type !== 'ReturnStatement') {
-                        console.log('I am not covering Phase0B');
+                } 
+                for(var i in node.properties){
+                    var tempNode = node.properties[i];
+                    var key = tempNode.key.type==='Identifier'?tempNode.key.name:tempNode.key.value;
+                    var value = tempNode.value.source();
+                    if(tempNode.key.type === 'Identifier'){
+                        statements += name + '.' + key + ' = ' + value + ';\n';
+                    }else{
+                        statements += name + '["' + key + '"] = ' + value + ';\n';
                     }
                 }
-                var tempSource = [];
-                for (var i in node.properties) {
-                    var tempNode1 = node.properties[i].value;
-                    if (tempNode1.type === 'CallExpression' || tempNode1.type === 'MemberExpression') {
-                        if (node.properties[i].key.source()[0] === "\"" || node.properties[i].key.source()[0] === "\'") {
-                            tempSource = tempSource + '\n' + name + '[' + node.properties[i].key.source() + ']';
-                        } else {
-                            tempSource = tempSource + '\n' + name + '.' + node.properties[i].key.source();
-                        }
-                        tempSource = tempSource + ' = ' + tempNode1.source().replace(/this/g, name) + ';'; //replace this to varName
-                        tempNode1.update('undefined');
-                    }
-                }
-                if (tempSource !== []) {
-                    node.parent.parent.update(node.parent.parent.source() + tempSource);
-                }
-            } 
+                node.parent.parent.update(statements);
+            }
         }).toString();
         /* Phase 0D - MemberExpression */
         var phase0D = falafel(phase0C, function(node) {
@@ -442,14 +432,63 @@ module.exports = {
                 index--;
             }
         }).toString();
-        //funtion
+        //b.onclick = funtion
         var phase0H = falafel(phase0G, function(node){
             if(node.type === 'FunctionExpression'){
                 renameFuntion(node);
             }
         }).toString();
+         /* phase0 - a[0][1] = 2 => Tempv0 = a[0] Tempv0[1] = 2 */
+        var phase0I = falafel(phase0H, function(node){
+            if(node.type === 'MemberExpression'){
+                if(node.parent.type === 'AssignmentExpression' && node.object.type === 'MemberExpression'){ //a[0][1] = b;
+                    var name = node.source().split('[')[0];
+                    var tempArr = [], temp = '', statements = '';
+                    for(var i=name.length; i<node.source().length; ++i){
+                        if(node.source()[i] === '[')
+                            continue;
+                        else if(node.source()[i] === ']'){
+                            tempArr.push(temp);
+                            temp = '';
+                            continue;
+                        }
+                        temp += node.source()[i]
+                    }
+                    var variableName;
+                    for(var i=0; i<tempArr.length-1; ++i){
+                        variableName = globalNameMaker.makeVariableName();
+                        statements += 'var ' + variableName + ' = ' + name + '[' + tempArr[i] + '];\n';
+                        name = variableName;
+                    }
+                    statements += name + '[' + tempArr[tempArr.length-1] + '] =' + node.parent.source().split('=')[1] + ';';
+                    node.parent.parent.update(statements);
+                }else if(node.parent.type === 'VariableDeclarator' && node.object.type === 'MemberExpression'){ //a = b[0][1]
+                    var name = node.source().split('[')[0];
+                    var tempArr = [], temp = '', statements = '';
+                    for(var i=name.length; i<node.source().length; ++i){
+                        if(node.source()[i] === '[')
+                            continue;
+                        else if(node.source()[i] === ']'){
+                            tempArr.push(temp);
+                            temp = '';
+                            continue;
+                        }
+                        temp += node.source()[i]
+                    }
+                    var variableName;
+                    for(var i=0; i<tempArr.length-1; ++i){
+                        variableName = globalNameMaker.makeVariableName();
+                        statements += 'var ' + variableName + ' = ' + name + '[' + tempArr[i] + '];\n';
+                        name = variableName;
+                    }
+                    statements += 'var ' + node.parent.source().split('=')[0] + ' = ' + name + '[' + tempArr[tempArr.length-1] + '];';
+                    node.parent.parent.update(statements);
+                }
+
+            }
+        }).toString();
         // result of phase0
-        return phase0H;
+        return phase0I;
     },
     phase1: function (code) {
         "use strict";

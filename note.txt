@@ -1,0 +1,24 @@
+1.
+function fun2(){
+    console.log('hello world');
+}
+function fun3(){    
+    b.addEventListener('click', fun2);
+}
+var a = document.getElementById('test1');
+var b = document.getElementById('test2');
+var c = {fun: fun3};
+a.onclick = c.fun;
+----原算法无法识别出存在的绑定依赖，I can
+2.
+function fun2(){
+    console.log('hello world');
+}
+function fun3(){    
+    b.addEventListener('click', fun2);
+}
+var a = document.getElementById('test1');
+var b = document.getElementById('test2');
+a.onclick = fun1;
+fun1 = fun3;
+----原算法错误识别出绑定依赖，I can’t
