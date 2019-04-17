@@ -1,0 +1,10 @@
+test1
+click
+test4
+click
+Install
+test2
+click
+test5
+click
+Install

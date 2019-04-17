@@ -1,3 +1,4 @@
+var fs = require('fs');
 // 获取对象所绑定的Dom元素id
 function GetDom(array, objectName){    
     for(var i=0; i<array.length; ++i){
@@ -51,17 +52,20 @@ function IsEqual(array, functionName1, functionName2, index){
     return false;
     
 } 
-// 输出绑定或者解绑依赖关系
-function PrintDep(o1, e1, o2, e2, dep){
-    console.log('===============================');
-    console.log(o1);
-    console.log(e1);
-    console.log(o2);
-    console.log(e2);
-    console.log(dep);
+// 保存绑定或者解绑依赖关系
+function SaveDep(o1, e1, o2, e2, dep, filePath){
+    // console.log(o1);
+    // console.log(e1);
+    // console.log(o2);
+    // console.log(e2);
+    // console.log(dep);
+    for(var i=0; i<arguments.length-1; ++i){
+        fs.appendFileSync(filePath, arguments[i]+'\n')
+    }
 }
 module.exports = {
-    DomDepAnalysis: function(facts){
+    DomDepAnalysis: function(facts, filePath){
+        fs.writeFileSync(filePath, ''); //清空原dep文件
         // 遍历所有事实获取绑定和解绑依赖 DomInstall(o1, e1, fun1, fun2);DomInstall(o2, e2, fun3, fun4);
         for(var i=0; i<facts.length; ++i){
             if(facts[i].DomInstall != undefined || facts[i].DomRemove != undefined){
@@ -69,9 +73,9 @@ module.exports = {
                 var funcLocation = array[3]; //绑定或者解绑所在的函数内部
                 for(var j=0; j<facts.length; ++j){
                     if(facts[j].DomInstall != undefined && IsNestCall(facts, array[3], facts[j].DomInstall[2])){ //fun4 in fun1
-                        PrintDep(GetDom(facts, facts[j].DomInstall[0]), facts[j].DomInstall[1], GetDom(facts, array[0]), array[1], facts[i].DomInstall===undefined?'Remove':'Install');
+                        SaveDep(GetDom(facts, facts[j].DomInstall[0]), facts[j].DomInstall[1], GetDom(facts, array[0]), array[1], facts[i].DomInstall===undefined?'Remove':'Install', filePath);
                     }else if(facts[j].DomInstall != undefined && IsEqual(facts, facts[j].DomInstall[2], funcLocation, j)){ //fun1 = fun4
-                        PrintDep(GetDom(facts, facts[j].DomInstall[0]), facts[j].DomInstall[1], GetDom(facts, array[0]), array[1], facts[i].DomInstall===undefined?'Remove':'Install');
+                        SaveDep(GetDom(facts, facts[j].DomInstall[0]), facts[j].DomInstall[1], GetDom(facts, array[0]), array[1], facts[i].DomInstall===undefined?'Remove':'Install', filePath);
                     }
                 }
             }

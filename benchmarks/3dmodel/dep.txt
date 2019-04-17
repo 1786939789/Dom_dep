@@ -1,0 +1,10 @@
+modello
+click
+timer_t
+setInterval
+Install
+modello
+change
+timer_t
+setInterval
+Install

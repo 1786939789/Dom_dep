@@ -6,9 +6,8 @@ var cfgRelated = require('./cfg');
 var benchmarks = ['case1', 'case2', 'case3', 'case4', '3dmodel', 
                 'ball_pool', 'chinabox', 'cosmos', 'cubuild', 'frog',
                 'fullhouse', 'gallony', 'hanoi', 'harehound', 'lady',
-                'match', 'pearlski', 'sokoban', 'speedyeater', 'wormy'];
+                'match', 'pearlski', 'sokoban', 'wormy'];
 for(var i=0; i<benchmarks.length; ++i){
-    console.log(benchmarks[i])
     var start = Date.now();
     var fileName = '../benchmarks/' + benchmarks[i] + '/index.js';
     var code = fs.readFileSync(fileName).toString();    //get code
@@ -16,8 +15,8 @@ for(var i=0; i<benchmarks.length; ++i){
     var cfg = cfgRelated.makeCFG(normalized);   // buid CFG using JS_WALA
     cfgRelated.buildDominatorTrees(cfg, true);  // build dominator tree using JS_WALA
     var facts = stage2.GetFacts(cfg);   // get facts
-    stage3.DomDepAnalysis(facts);   //dep analysis
+    stage3.DomDepAnalysis(facts, '../benchmarks/'+benchmarks[i]+'/dep.txt');   //dep analysis and save into file
     var end = Date.now();
     var duration = (end - start) / 1000;
-    console.log(duration + 's');
+    fs.writeFileSync('../benchmarks/'+benchmarks[i]+'/time.txt', duration+'s');
 }
